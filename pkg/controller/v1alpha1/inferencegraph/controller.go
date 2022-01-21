@@ -1,5 +1,5 @@
-// +kubebuilder:rbac:groups=serving.kubeflow.org,resources=inferencegraphs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=serving.kubeflow.org,resources=inferencegraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=serving.kserve.io,resources=inferencegraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=serving.kserve.io,resources=inferencegraphs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services/status,verbs=get;update;patch
@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
 	v1alpha1api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
