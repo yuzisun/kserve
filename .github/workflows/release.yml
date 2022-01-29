@@ -8,6 +8,7 @@ jobs:
   version:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - id: get-version
       run: |
         export VERSION=$(cat VERSION.txt)
