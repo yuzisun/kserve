@@ -34,7 +34,7 @@ jobs:
       uses: Roang-zero1/github-upload-release-artifacts-action@master
       with:
         args:
-        - install/${{ needs.version.outputs.release_version }}/kserve.yaml
-        - install/${{ needs.version.outputs.release_version }}/kserve_kubeflow.yaml
+        - install/"${{ needs.version.outputs.release_version }}"/kserve.yaml
+        - install/"${{ needs.version.outputs.release_version }}"/kserve_kubeflow.yaml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
