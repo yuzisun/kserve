@@ -1,0 +1,39 @@
+on:
+  release:
+    types: [created]
+
+name: Build &amp; Release
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+    - id: get-version
+      run: |
+        export VERSION=$(cat VERSION.txt)
+        echo "::set-output name=release_version::${VERSION}"
+      outputs:
+        release_version: ${{ steps.get-version.outputs.release_version }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: build
+      run: |
+        ./hack/generate-install.sh ${{ jobs.version.outputs.release_version }}
+  release:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+    - uses: actions/checkout@master
+    - name: Create release
+      uses: Roang-zero1/github-create-release-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create GitHub release
+      uses: Roang-zero1/github-upload-release-artifacts-action@master
+      with:
+        args:
+        - install/${{ jobs.version.outputs.release_version }}/kserve.yaml
+        - install/${{ jobs.version.outputs.release_version }}/kserve_kubeflow.yaml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
