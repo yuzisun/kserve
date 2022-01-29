@@ -91,7 +91,7 @@ const (
 	// PredictorConfigurationReady is set when predictor pods are ready.
 	PredictorConfigurationReady apis.ConditionType = "PredictorConfigurationReady"
 	// TransformerConfigurationeReady is set when transformer pods are ready.
-	TransformerConfigurationeReady apis.ConditionType = "TransformerConfigurationeReady"
+	TransformerConfigurationeReady apis.ConditionType = "TransformerConfigurationReady"
 	// ExplainerConfigurationReady is set when explainer pods are ready.
 	ExplainerConfigurationReady apis.ConditionType = "ExplainerConfigurationReady"
 	// PredictorReady is set when predictor has reported readiness.
@@ -235,11 +235,11 @@ func (ss *InferenceServiceStatus) PropagateStatus(component ComponentType, servi
 	readyCondition := conditionsMap[component]
 	ss.SetCondition(readyCondition, serviceCondition)
 	// propagate route condition for each component
-	routeCondition := serviceStatus.GetCondition("ConfigurationsReady")
+	routeCondition := serviceStatus.GetCondition("RoutesReady")
 	routeConditionType := routeConditionsMap[component]
 	ss.SetCondition(routeConditionType, routeCondition)
 	// propagate configuration condition for each component
-	configurationCondition := serviceStatus.GetCondition("RoutesReady")
+	configurationCondition := serviceStatus.GetCondition("ConfigurationReady")
 	configurationConditionType := configurationConditionsMap[component]
 	// propagate traffic status for each component
 	statusSpec.Traffic = serviceStatus.Traffic
