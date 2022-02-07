@@ -51,7 +51,7 @@ spec:
                           nodeName:
                             type: string
                         required:
-                        - nodeName
+                        - data
                         type: object
                       type: array
                     routerType:
@@ -59,6 +59,8 @@ spec:
                     routes:
                       items:
                         properties:
+                          condition:
+                            type: string
                           service:
                             type: string
                           serviceUrl:
