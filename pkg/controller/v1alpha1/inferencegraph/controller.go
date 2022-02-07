@@ -1,5 +1,5 @@
-// +kubebuilder:rbac:groups=serving.kubeflow.org,resources=inferencegraphs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=serving.kubeflow.org,resources=inferencegraphs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=serving.kserve.io,resources=inferencegraphs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=serving.kserve.io,resources=inferencegraphs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=serving.knative.dev,resources=services/status,verbs=get;update;patch
@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	"github.com/golang/protobuf/proto"
 	v1alpha1api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
@@ -30,6 +31,7 @@ import (
 	knservingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -111,6 +113,12 @@ func (r *InferenceGraphReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Create service if does not exist
 	desired := createKnativeService(graph.ObjectMeta, graph, routerConfig)
 	existing := &knservingv1.Service{}
+
+	err = controllerutil.SetControllerReference(graph, desired, r.Scheme)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	err = r.Client.Get(context.TODO(), types.NamespacedName{Name: desired.Name, Namespace: desired.Namespace}, existing)
 	if err != nil {
 		if apierr.IsNotFound(err) {
@@ -119,6 +127,10 @@ func (r *InferenceGraphReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			if err != nil {
 				return reconcile.Result{}, err
 			} else {
+				if err := r.updateStatus(graph); err != nil {
+					r.Recorder.Eventf(graph, v1.EventTypeWarning, "InternalError", err.Error())
+					return reconcile.Result{}, err
+				}
 				return reconcile.Result{}, nil
 			}
 		} else {
@@ -226,6 +238,20 @@ func (r *InferenceGraphReconciler) updateStatus(desiredService *v1alpha1api.Infe
 	namespacedName := types.NamespacedName{Name: desiredService.Name, Namespace: desiredService.Namespace}
 	if err := r.Get(context.TODO(), namespacedName, existingService); err != nil {
 		return err
+	}
+	var kns = &knservingv1.Service{}
+	if err := r.Get(context.TODO(), namespacedName, kns); err != nil {
+		return err
+	}
+	desiredService.Status.Conditions = kns.Status.Conditions
+	for _, con := range kns.Status.Conditions {
+		if con.Type == apis.ConditionReady {
+			if con.Status == "True" {
+				desiredService.Status.URL = kns.Status.URL
+			} else {
+				desiredService.Status.URL = nil
+			}
+		}
 	}
 	wasReady := inferenceGraphReadiness(existingService.Status)
 	if equality.Semantic.DeepEqual(existingService.Status, desiredService.Status) {
