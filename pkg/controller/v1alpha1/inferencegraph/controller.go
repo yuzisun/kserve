@@ -186,6 +186,9 @@ func createKnativeService(componentMeta metav1.ObjectMeta, graph *v1alpha1api.In
 		return nil
 	}
 	annotations := componentMeta.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
 
 	// User can pass down scaling class annotation to overwrite the default scaling KPA
 	if _, ok := annotations[autoscaling.ClassAnnotationKey]; !ok {
