@@ -112,7 +112,7 @@ func validateInferenceGraphSplitterWeight(ig *InferenceGraph) error {
 				weight += int(*route.Weight)
 			}
 			if weight != 100 {
-				return fmt.Errorf("InferenceGraph[%s] Node[%s] splitter node all routing targets should be sum of 100", ig.Name, name)
+				return fmt.Errorf("InferenceGraph[%s] Node[%s] splitter node: the sum of traffic weights for all routing targets should be 100", ig.Name, name)
 			}
 		}
 	}
