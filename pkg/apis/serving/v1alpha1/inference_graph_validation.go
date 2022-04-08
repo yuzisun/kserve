@@ -92,7 +92,7 @@ func validateInferenceGraphRouterType(ig *InferenceGraph) error {
 	for name, node := range nodes {
 		if node.RouterType != Single && node.RouterType != Splitter &&
 			node.RouterType != Ensemble && node.RouterType != Switch {
-			return fmt.Errorf("InferenceGraph[%s] Node[%s] RouterType[%s] is not supported, InferenceGraph supports RouterType List['Single', 'Spilitter', 'Ensemble', 'Switch']",
+			return fmt.Errorf("InferenceGraph[%s] Node[%s] RouterType[%s] is not supported, InferenceGraph supports RouterType List['Single', 'Splitter', 'Ensemble', 'Switch']",
 				ig.Name, name, node.RouterType)
 		}
 	}
