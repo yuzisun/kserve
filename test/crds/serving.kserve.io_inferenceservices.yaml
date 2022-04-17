@@ -1149,6 +1149,11 @@ spec:
                         type: object
                       type: array
                     routerType:
+                      enum:
+                      - Single
+                      - Splitter
+                      - Ensemble
+                      - Switch
                       type: string
                     routes:
                       items:
