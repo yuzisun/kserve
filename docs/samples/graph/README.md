@@ -58,7 +58,7 @@ mymodel:
   - nodeName: isvcM
     data: $response
 ```
-We use `k8s.io/client-go/util/jsonpath` to parse the condition, Because of the kubernetes jsonpath can not support `map` fillter, so we make a little changes on the input data and `condition`:
+We use `k8s.io/client-go/util/jsonpath` to parse the condition, because the kubernetes jsonpath can not support `map` input, we make a change on the input data and `condition`:
 * wrap the input data up to an `array`, for example: 
 
 **origin input data:**
