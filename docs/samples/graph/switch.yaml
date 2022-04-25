@@ -26,6 +26,20 @@ spec:
       - name: "target"
         value: "green"
 ---
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "red"
+spec:
+  predictor:
+    minReplicas: 1
+    containers:
+    - image: iamlovingit/bgtest:latest
+      name: custom
+      env: 
+      - name: "target"
+        value: "green"
+---
 apiVersion: "serving.kserve.io/v1alpha1"
 kind: InferenceGraph
 metadata: 
@@ -33,19 +47,14 @@ metadata:
 spec:
   nodes:
     root:
-      routerType: Single
-      routes:
-      - service: green
-        serviceUrl: http://green.default.10.166.15.29.sslip.io/splitter
-      nextRoutes:
-      - nodeName: mymodel
-        data: $response
-    mymodel:
       routerType: Switch
       routes:
       - service: blue
-        serviceUrl: http://blue.default.10.166.15.29.sslip.io/splitter
-        condition: "{.target == \"blue\"}"
+        serviceUrl: http://blue.default.10.166.15.29.sslip.io/switch
+        condition: "[@this].#(target==blue)" 
       - service: green
-        serviceUrl: http://green.default.10.166.15.29.sslip.io/splitter
-        condition: "{.target != \"blue\"}"
+        serviceUrl: http://green.default.10.166.15.29.sslip.io/switch
+        condition: "instances.#(intval>10)"
+      - service: red
+        serviceUrl: http://red1.default.10.166.15.29.sslip.io/switch
+        condition: "instances.#(strval%str-9)"

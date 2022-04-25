@@ -49,47 +49,63 @@ mymodel:
   routerType: Switch
   routes:
   - service: isvc1
-    serviceUrl: http://isvc1.default.example.com/splitter
+    serviceUrl: http://isvc1.default.example.com/switch
     condition: "{.target == \"blue\"}"
   - service: isvc2
-    serviceUrl: http://isvc2.default.example.com/splitter
+    serviceUrl: http://isvc2.default.example.com/switch
     condition: "{.target != \"blue\"}"
   nextRoutes:
   - nodeName: isvcM
     data: $response
 ```
-We use `k8s.io/client-go/util/jsonpath` to parse the condition, because the kubernetes jsonpath can not support `map` input, we make a change on the input data and `condition`:
-* wrap the input data up to an `array`, for example: 
+We use [gjson](https://github.com/tidwall/gjson) to parse the condition, for more information please check out [GJSON Syntax](https://github.com/tidwall/gjson/blob/master/SYNTAX.md)
 
-**origin input data:**
+Below is a quick overview of the path syntax
+
+A path is a series of keys separated by a dot.
+A key may contain special wildcard characters '\*' and '?'.
+To access an array value use the index as the key.
+To get the number of elements in an array or to access a child path, use the '#' character.
+The dot and wildcard characters can be escaped with '\\'.
+
 ```json
 {
-  "target": "blue",
-  "server_counter": 0,
-  "target_counter": 8
-}
-```
-**after convert**
-```json
-{
-  "items": [
-    {
-      "target": "blue",
-      "server_counter": 0,
-      "target_counter": 8
-    }
+  "name": {"first": "Tom", "last": "Anderson"},
+  "age":37,
+  "children": ["Sara","Alex","Jack"],
+  "fav.movie": "Deer Hunter",
+  "friends": [
+    {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+    {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
   ]
 }
 ```
-* change the `condition` to 
-
-**origin condition**
-```json
-"{.target == \"blue\"}"
 ```
-**after convert**
-```json
-"{@.items[?(.target==\"blue\")]}"
+"name.last"          >> "Anderson"
+"age"                >> 37
+"children"           >> ["Sara","Alex","Jack"]
+"children.#"         >> 3
+"children.1"         >> "Alex"
+"child*.2"           >> "Jack"
+"c?ildren.0"         >> "Sara"
+"fav\.movie"         >> "Deer Hunter"
+"friends.#.first"    >> ["Dale","Roger","Jane"]
+"friends.1.last"     >> "Craig"
+```
+
+You can also query an array for the first match by using `#(...)`, or find all 
+matches with `#(...)#`. Queries support the `==`, `!=`, `<`, `<=`, `>`, `>=` 
+comparison operators and the simple pattern matching `%` (like) and `!%` 
+(not like) operators.
+
+```
+friends.#(last=="Murphy").first    >> "Dale"
+friends.#(last=="Murphy")#.first   >> ["Dale","Jane"]
+friends.#(age>45)#.last            >> ["Craig","Murphy"]
+friends.#(first%"D*").last         >> "Murphy"
+friends.#(first!%"D*").last        >> "Craig"
+friends.#(nets.#(=="fb"))#.first   >> ["Dale","Roger"]
 ```
 
 ### **2.4 Ensemble Node**
@@ -163,24 +179,45 @@ kubectl get pods
 NAME                                                              READY   STATUS    RESTARTS   AGE
 blue-predictor-default-00002-deployment-855665bc49-m5vxt          2/2     Running   0          3m26s
 green-predictor-default-00002-deployment-7485d64dbd-dgmbx         2/2     Running   0          3m26s
+red-predictor-default-00001-deployment-6f7559d5b6-vttvv           2/2     Running   0          56m
 model-switch-00001-deployment-7ff47cdbb8-vxgp7                    2/2     Running   0          28s
 
 kubectl get isvc
 NAME              URL                                                    READY   PREV   LATEST   PREVROLLEDOUTREVISION   LATESTREADYREVISION                       AGE
 blue              http://blue.default.10.166.15.29.sslip.io              True           100                              blue-predictor-default-00002              3d7h
 green             http://green.default.10.166.15.29.sslip.io             True           100                              green-predictor-default-00002             3d7h
+red               http://red.default.10.166.15.29.sslip.io               True           100                              red-predictor-default-00001               56m
 
 kubectl get ig
 NAME            URL                                                  READY   AGE
 model-switch     http://model-switch.default.10.166.15.29.sslip.io     True    35s
 ```
 3. Tesing `graph`.
+
 ```shell
-curl http://model-switch.default.10.166.15.29.sslip.io
+curl -X POST http://model-switch.default.10.166.15.29.sslip.io -d '{"target":"blue","instances":[{"name":"test","intval":9,"strval":"str-19"}]}'
 ``` 
-***Expect result***
+***Expect result from `blue` service***
 ```shell
-{"mymodel":{"server_counter":0,"target":"green","target_counter":2}}
+{"instances":[{"intval":0,"name":"blue0","strval":"str-0"},{"intval":1,"name":"blue1","strval":"str-1"},{"intval":2,"name":"blue2","strval":"str-2"},{"intval":3,"name":"blue3","strval":"str-3"},{"intval":4,"name":"blue4","strval":"str-4"},{"intval":5,"name":"blue5","strval":"str-5"},{"intval":6,"name":"blue6","strval":"str-6"},{"intval":7,"name":"blue7","strval":"str-7"},{"intval":8,"name":"blue8","strval":"str-8"},{"intval":9,"name":"blue9","strval":"str-9"}],"target":"blue"}
+```
+
+```shell
+curl -X POST http://model-switch.default.10.166.15.29.sslip.io -d '{"target":"green","instances":[{"name":"test","intval":19,"strval":"str-19"}]}'
+```
+
+***Expect result from `green` service***
+```shell
+{"instances":[{"intval":0,"name":"green0","strval":"str-0"},{"intval":1,"name":"green1","strval":"str-1"},{"intval":2,"name":"green2","strval":"str-2"},{"intval":3,"name":"green3","strval":"str-3"},{"intval":4,"name":"green4","strval":"str-4"},{"intval":5,"name":"green5","strval":"str-5"},{"intval":6,"name":"green6","strval":"str-6"},{"intval":7,"name":"green7","strval":"str-7"},{"intval":8,"name":"green8","strval":"str-8"},{"intval":9,"name":"green9","strval":"str-9"}],"target":"green"}
+```
+
+```shell
+curl -X POST http://model-switch.default.10.166.15.29.sslip.io -d '{"target":"test","instances":[{"name":"test","intval":19,"strval":"str-9"}]}'
+```
+
+***Expect result from `red` service***
+```shell
+{"instances":[{"intval":0,"name":"red0","strval":"str-0"},{"intval":1,"name":"red1","strval":"str-1"},{"intval":2,"name":"red2","strval":"str-2"},{"intval":3,"name":"red3","strval":"str-3"},{"intval":4,"name":"red4","strval":"str-4"},{"intval":5,"name":"red5","strval":"str-5"},{"intval":6,"name":"red6","strval":"str-6"},{"intval":7,"name":"red7","strval":"str-7"},{"intval":8,"name":"red8","strval":"str-8"},{"intval":9,"name":"red9","strval":"str-9"}],"target":"red"}
 ```
 [***Demo yaml***](switch.yaml)
 ### **3.3 [Splitter](splitter.yaml)**
