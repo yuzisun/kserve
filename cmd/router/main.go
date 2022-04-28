@@ -59,7 +59,7 @@ func pickupRoute(routes []v1alpha1.InferenceRoute) *v1alpha1.InferenceRoute {
 	start, end := 0, 0
 
 	for _, route := range routes {
-		start += end
+		start = end
 		end += int(*route.Weight)
 		if point >= start && point < end {
 			return &route
