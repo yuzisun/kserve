@@ -25,7 +25,7 @@ As the above image shows, an inference graph is made up of a list of `nodes`, an
 
 
 ### **2.2 Single Node**
-**Single Node** makes user can connect 2 isvcs in a sequence relationship. The
+**Single Node** allows users to connect two `isvcs` in a sequence relationship. The
 `routes` field defines the first `isvc`, and if this node is not the tail node of the graph, it will have one `nextRoute` as the second `isvc`. User can choose `$request` or `$response` from the first `isvc` as the input data to send to the second `isvc`.
 
 ![image](singleNode.png)
