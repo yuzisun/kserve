@@ -14,7 +14,7 @@
 # **Inference Graph**
 ## **1. Problem** 
 
-Often the time on a production inference pipeline, it is not a single inference service, models need to be chained together to produce the final prediction result. For example a face recognition pipeline may need to find the face area first and then compute the features of the faces to match the face database, these two models are depending on each other and the first model’s output is the second model’s input. Another example is the NLP pipeline, it is very common that you would need to do some document classification first followed by downstream named entity detection or text summary tasks.[[...]](https://docs.google.com/document/d/13VHfOxa72pgoy5Eg5c-gGHZfEL7uBDc7rTLa2pAi4Ko/edit#heading=h.x9snb54sjlu9)
+Production inference pipelines are often composed of multiple inference services, and models need to be chained together to produce the final prediction result. For example, a face recognition pipeline may need to find the face area first and then compute the features of the faces to match the face database. These two models depend on each other, and the first model’s output is the second model’s input. Another example is the NLP pipeline. It is very common to do some document classification and then have downstream tasks for named entity detection or text summary.[[...]](https://docs.google.com/document/d/13VHfOxa72pgoy5Eg5c-gGHZfEL7uBDc7rTLa2pAi4Ko/edit#heading=h.x9snb54sjlu9)
 
 KServe inference graph is designed for this.
 
