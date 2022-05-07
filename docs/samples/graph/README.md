@@ -21,7 +21,7 @@ KServe inference graph is designed for this.
 ## **2. KServe Inference Graph** 
 ![image](graph.png)
 ### **2.1 Inference Graph**
-As above image shows, inference graph is made up of a list of `nodes` , and each `node` consists of several `isvcs`. Every graph must have a root node named `root`. When an inference request hits the graph it excutes the `root` node from the DFS, if the graph has other `nodes`, it will pass the `$request` or `$response` of the root service as input data to the `next node`. There are four types of `node` are supported: ***Single***, ***Switch***, ***Ensemble***, ***Splitter***.
+As the above image shows, an inference graph is made up of a list of `nodes`, and each `node` consists of several `isvcs`. Every graph must have a root node named `root`. When an inference request hits the graph, it executes the `root` node from the DAG. If the graph has other `nodes`, it will pass the `$request` or `$response` of the root service as input data to the `next node`. There are four `node` types that are supported: ***Single***, ***Switch***, ***Ensemble***, ***Splitter***.
 
 
 ### **2.2 Single Node**
