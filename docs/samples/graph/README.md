@@ -41,7 +41,7 @@ root:
 ...
 ```
 ### **2.3 Switch Node**
-**Switch Node** makes user can select an `isvc` to handle the request by setting the `condition`. Usually, user doesn't need to set the `serviceURL`, kserve will fill it with `isvc.status.address.URL` of `isvc`, but if you want to specified the `serviceURL`, you can set it manually. 
+**Switch Node** allows users to select an `isvc` to handle the request by setting the `condition`. Usually, users don't need to set the `serviceURL` as KServe will fill it in with `isvc.status.address.URL` of the `isvc`, but if desired, `serviceURL` can be specified explicitly.
 
 ![image](switchNode.png)
 ```yaml
