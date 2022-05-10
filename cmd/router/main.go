@@ -23,10 +23,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
-	"k8s.io/client-go/util/jsonpath"
+	"github.com/tidwall/gjson"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -58,61 +57,22 @@ func pickupRoute(routes []v1alpha1.InferenceStep) *v1alpha1.InferenceStep {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	//generate num [0,100)
 	point := r.Intn(99)
-	start, end := 0, 0
-
+	edge := 0
 	for _, route := range routes {
-		start += end
-		end += int(*route.Weight)
-		if point >= start && point < end {
+		if point >= edge && point < edge+int(*route.Weight) {
 			return &route
 		}
+		edge += int(*route.Weight)
 	}
 	return nil
 }
 
-//Input is a struct that can be parsed by jsonpath
-type Input struct {
-	Items []interface{} `json:"items"`
-}
-
-func convertInput(input []byte) (interface{}, error) {
-	var inputData interface{}
-	if err := json.Unmarshal(input, &inputData); err != nil {
-		return nil, err
-	}
-	var data Input
-	data.Items = append(data.Items, inputData)
-	return data, nil
-}
-
-func convertCondition(origin string) string {
-	//remove whitespaces
-	str := strings.Replace(origin, " ", "", -1)
-	//remove {}
-	str = str[1 : len(str)-1]
-	return fmt.Sprintf("{@.items[?(%s)]}", str[strings.Index(str, "."):])
-}
-
 func pickupRouteByCondition(input []byte, routes []v1alpha1.InferenceStep) *v1alpha1.InferenceStep {
-	//convert input to Input
-	data, err := convertInput(input)
-	if err != nil {
-		log.Error(err, "convertInput failed.")
+	if !gjson.ValidBytes(input) {
 		return nil
 	}
 	for _, route := range routes {
-		j := jsonpath.New("Parser")
-		//j.AllowMissingKeys(true)
-		cond := convertCondition(route.Condition)
-		if err := j.Parse(cond); err != nil {
-			log.Error(err, "jsonpath.Parse failed")
-			continue
-		}
-		buf := new(bytes.Buffer)
-		if err := j.Execute(buf, data); err != nil {
-			log.Error(err, "jsonpath.Execute failed")
-		}
-		if buf.Len() > 0 { // find the target
+		if gjson.GetBytes(input, route.Condition).Exists() {
 			return &route
 		}
 	}
