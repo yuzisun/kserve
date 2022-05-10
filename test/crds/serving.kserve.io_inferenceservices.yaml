@@ -1828,6 +1828,8 @@ spec:
                             type: string
                           data:
                             type: string
+                          name:
+                            type: string
                           nodeName:
                             type: string
                           service:
