@@ -136,12 +136,3 @@ def to_headers(context: ServicerContext) -> Dict[str, str]:
         headers[metadatum.key] = metadatum.value
 
     return headers
-
-
-def convert_grpc_response_to_dict(response: ModelInferResponse) -> Dict[str, Any]:
-    infer_outputs = [InferOutput(name=output.name, shape=list(output.shape),
-                                 datatype=output.datatype, data=output.contents)
-                     for output in response.outputs]
-    infer_response = InferResponse(model_name=response.model_name, response_id=response.id,
-                                   infer_outputs=infer_outputs, raw_outputs=response.raw_output_contents)
-    return infer_response.to_rest()
