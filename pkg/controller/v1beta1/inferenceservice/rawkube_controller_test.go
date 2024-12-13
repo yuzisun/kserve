@@ -22,6 +22,8 @@ import (
 	"time"
 
 	"github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
+	"github.com/kserve/kserve/pkg/utils"
+	apierr "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
