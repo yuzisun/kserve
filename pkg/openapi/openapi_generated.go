@@ -81,7 +81,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExplainerExtensionSpec":         schema_pkg_apis_serving_v1beta1_ExplainerExtensionSpec(ref),
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExplainerSpec":                  schema_pkg_apis_serving_v1beta1_ExplainerSpec(ref),
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExplainersConfig":               schema_pkg_apis_serving_v1beta1_ExplainersConfig(ref),
-		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuth":                  schema_pkg_apis_serving_v1beta1_ExtMetricAuth(ref),
+		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuthentication":        schema_pkg_apis_serving_v1beta1_ExtMetricAuthentication(ref),
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExternalMetricSource":           schema_pkg_apis_serving_v1beta1_ExternalMetricSource(ref),
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExternalMetrics":                schema_pkg_apis_serving_v1beta1_ExternalMetrics(ref),
 		"github.com/kserve/kserve/pkg/apis/serving/v1beta1.FailureInfo":                    schema_pkg_apis_serving_v1beta1_FailureInfo(ref),
@@ -5310,7 +5310,7 @@ func schema_pkg_apis_serving_v1beta1_ExplainersConfig(ref common.ReferenceCallba
 	}
 }
 
-func schema_pkg_apis_serving_v1beta1_ExtMetricAuth(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_serving_v1beta1_ExtMetricAuthentication(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -5331,6 +5331,7 @@ func schema_pkg_apis_serving_v1beta1_ExtMetricAuth(ref common.ReferenceCallback)
 						},
 					},
 				},
+				Required: []string{"authenticationRef"},
 			},
 		},
 		Dependencies: []string{
@@ -5351,11 +5352,10 @@ func schema_pkg_apis_serving_v1beta1_ExternalMetricSource(ref common.ReferenceCa
 							Ref:         ref("github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExternalMetrics"),
 						},
 					},
-					"authenticationRef": {
+					"authentication": {
 						SchemaProps: spec.SchemaProps{
 							Description: "authenticationRef is a reference to the authentication information for more information see: https://keda.sh/docs/2.17/scalers/prometheus/#authentication-parameters",
-							Default:     map[string]interface{}{},
-							Ref:         ref("github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuth"),
+							Ref:         ref("github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuthentication"),
 						},
 					},
 					"target": {
@@ -5370,7 +5370,7 @@ func schema_pkg_apis_serving_v1beta1_ExternalMetricSource(ref common.ReferenceCa
 			},
 		},
 		Dependencies: []string{
-			"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuth", "github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExternalMetrics", "github.com/kserve/kserve/pkg/apis/serving/v1beta1.MetricTarget"},
+			"github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExtMetricAuthentication", "github.com/kserve/kserve/pkg/apis/serving/v1beta1.ExternalMetrics", "github.com/kserve/kserve/pkg/apis/serving/v1beta1.MetricTarget"},
 	}
 }
 
