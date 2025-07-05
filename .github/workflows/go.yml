@@ -123,7 +123,7 @@ jobs:
               uses: vladopajic/go-test-coverage@v2
               continue-on-error: true
               with:
-                config: ./.github/.testcoverage.yml
+                config: ./.testcoverage.yml
                 breakdown-file-name: ${{ github.ref_name == 'master' && 'master.breakdown' || '' }}
                 diff-base-breakdown-file-name: ${{ steps.download-master-breakdown.outputs.found_artifact == 'true' && 'master.breakdown' || '' }}
             
