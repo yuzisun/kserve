@@ -11,22 +11,22 @@ spec:
             - group: gateway.networking.k8s.io
               kind: Gateway
               name: |-
-                {{ .GlobalConfig.IngressGatewayName }}
+                {{ printf "%q" "{{ .GlobalConfig.IngressGatewayName }}" }}
               namespace: |-
-                {{ .GlobalConfig.IngressGatewayNamespace }}
+                {{ printf "%q" "{{ .GlobalConfig.IngressGatewayNamespace }}" }}
           rules:
             - backendRefs:
                 - group: inference.networking.x-k8s.io
                   kind: InferencePool
                   name: |-
-                    {{ ChildName .ObjectMeta.Name `-inference-pool` }}
+                    {{ printf "%q" "{{ .ObjectMeta.Name `-inference-pool` }}" }}
                   port: 8000
                   weight: 1
               matches:
                 - path:
                     type: PathPrefix
                     value: |-
-                      /{{ .ObjectMeta.Namespace }}/{{ .ObjectMeta.Name }}
+                      {{ printf "%q" "/{{ .ObjectMeta.Namespace }}/{{ .ObjectMeta.Name }}" }}
               filters:
                 - type: URLRewrite
                   urlRewrite:
